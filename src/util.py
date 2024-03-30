@@ -1,3 +1,4 @@
+import re
 def get_questions():
     questions = questions = [
         [
@@ -151,6 +152,105 @@ def get_questions():
 
     return questions
 
+# def display_plot(data):
+#     import matplotlib.pyplot as plt
+#     # Plotting
+#     plt.figure(figsize=(8, 6))
+#     plt.bar(data.keys(), data.values(), color=['blue', 'green', 'red', 'orange'])
+#     plt.title('BDI Scores')
+#     plt.xlabel('Score Type')
+#     plt.ylabel('Score')
+#     plt.ylim(0, max(data.values()) + 10)  # Adjust ylim for better visualization
+#     plt.grid(True)
+
+#     plt.savefig('static/plot.png')
+
+def display_plot(data):
+    import matplotlib.pyplot as plt
+
+    # Define colors for bars
+    colors = ['cornflowerblue', 'lightgreen', 'salmon', 'gold']
+
+    # Plotting
+    plt.figure(figsize=(10, 6))
+    bars = plt.bar(data.keys(), data.values(), color=colors)
+
+    # Add data labels
+    for bar in bars:
+        yval = bar.get_height()
+        plt.text(bar.get_x() + bar.get_width()/2, yval + 0.2, round(yval, 2), ha='center', va='bottom')
+
+    plt.title('BDI Scores')
+    plt.xlabel('Score Type')
+    plt.ylabel('Score')
+    plt.ylim(0, max(data.values()) + 10)  # Adjust ylim for better visualization
+    plt.grid(False)  # Remove grid lines
+
+    # Add some padding to the x-axis
+    plt.xticks(rotation=45, ha='right')
+
+    # Save the plot
+    plt.tight_layout()
+    plt.savefig('static/plot.png')
+
+    # Show the plot (optional)
+    # plt.show()
+
+
+
+def interpret_score(score):
+    if score >= 1 and score <= 10:
+        return "These ups and downs are considered normal"
+    elif score >= 11 and score <= 16:
+        return "Mild mood disturbance"
+    elif score >= 17 and score <= 20:
+        return "Borderline clinical depression"
+    elif score >= 21 and score <= 30:
+        return "Moderate depression"
+    elif score >= 31 and score <= 40:
+        return "Severe depression"
+    elif score > 40:
+        return "Extreme depression"
+    else:
+        return "Invalid score"
+
 def evaluate_questions(request):
     print("hello",  request.get_data())
-    return "You are good."
+    b'question1=3&question2=3&question3=2&question4=3&question5=3&question6=2&question7=2&question8=3&question9=2&question10=1&question11=1&question12=1&question13=1&question14=1&question15=1&question16=1&question17=1&question18=1&question19=1&question20=1&question21=1'
+    response = request.get_data()
+    re_results = re.findall(rb"question\d+=[1-4]", response)
+    cognitive_bdi = [13, 3, 14, 5, 6, 7, 8]
+    affective_bdi = [1, 2, 4, 9, 12]
+    somatic_bdi = [15, 17, 19, 20, 11, 10, 16, 18, 21]
+    answers = {}
+    for res in re_results:
+        re_g = re.search(r'\d+=\d+', str(res))
+        if re_g:
+            op = re_g.group()
+            op = op.split('=')
+            if len(op)==2:
+                answers[int(op[0])] = int(op[1])-1
+    scores = {
+        'cognitive_bdi_score' : 0,
+        'affective_bdi_score' : 0,
+        'somatic_bdi_score' : 0,
+        'total_score' : 0
+    }
+    for key, value in answers.items():
+        scores['total_score'] += value
+        if key in affective_bdi:
+            scores['affective_bdi_score']+= value
+        elif key in cognitive_bdi:
+            scores['cognitive_bdi_score'] += value
+        elif key in somatic_bdi:
+            scores['somatic_bdi_score'] += value
+
+    display_plot(scores)
+    # 1-10________These ups and downs are considered normal 
+    # 11-16_______ Mild mood disturbance 
+    # 17-20_________Borderline clinical depression 
+    # 21-30_________Moderate depression 
+    # 31-40_________Severe depression 
+    # over 40________Extreme depression
+    
+    return f"Your Result: {interpret_score(score=scores['total_score'])}"

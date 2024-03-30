@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Depression Predictions Inventory</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+<!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='util.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='main.css') }}">
+<!--===============================================================================================-->
+</head>
+<body>
+    <div class="">
+        <form class="" action="{{ url_for('evaluate') }}" method="POST">
+            <div class="wrap-contact100">
+                <span class="contact100-form-title">
+                    Affective Analysis
+                </span>
+                {% for question in questions %}
+                <div class="wrap-input100 input100-select">
+                    <span class="label-input100">{{ question[0] }}</span>
+                    <div>
+                        <select class="selection-2" name="question{{ loop.index }}">
+                            <!-- <option value="none">Select a Batting teams</option> -->
+
+                            {% for choice in question[1:] %}
+                                <option value="{{ loop.index }}">{{ choice }}</option>
+                            {% endfor %}
+                            
+                        </select>
+                    </div>
+                    <span class="focus-input100"></span>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="container-contact100-form-btn" id="predict-button">
+                <div class="wrap-contact100-form-btn">
+                    <div class="contact100-form-bgbtn"></div>
+                    <button class="contact100-form-btn" type="submit">
+                        <span>
+                            Evaluate Final Results
+                            <i class="fa fa-long-arrow-right m-l-7" aria-hidden="true"></i>
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div id="dropDownSelect1"></div>
+</body>
+</html>
